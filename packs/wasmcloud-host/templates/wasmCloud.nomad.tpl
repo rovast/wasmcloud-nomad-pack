@@ -85,7 +85,7 @@ group "wasmcloud" {
       }
 
       config {
-        image = "wasmcloud/wasmcloud_host:0.50.3"
+        image = "harbor.oneitfarm.com/bifrost/wasmcloud:0.58.0-2"
       }
     }
   }
