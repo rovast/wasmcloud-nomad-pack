@@ -1,7 +1,7 @@
 variable "job_name" {
   description = "The name to use as the job name which overrides using the pack name"
   type        = string
-  default = "wasmcloud"
+  default     = "wasmcloud"
 }
 
 variable "datacenters" {
@@ -25,5 +25,5 @@ variable "consul_service_name" {
 variable "consul_service_tags" {
   description = "The consul service name for the hello-world application"
   type        = list(string)
-  default = []
+  default     = []
 }

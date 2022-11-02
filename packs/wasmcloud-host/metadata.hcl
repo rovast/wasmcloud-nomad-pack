@@ -6,6 +6,6 @@ app {
 pack {
   name = "wasmcloud"
   description = "wasmCloud Runtime"
-  url = "https://github.com/taction/wasmcloud-nomad-pack/pack"
+  url = "https://github.com/rovast/wasmcloud-nomad-pack/pack"
   version = "0.0.1"
 }

@@ -2,6 +2,23 @@
 # vi: set ft=ruby :
 
 $script = <<SCRIPT
+echo "Setting ustc.edu.cn repo"
+sudo mv /etc/apt/sources.list /etc/apt/sources.list.bak
+(
+  cat <<-EOF
+deb https://mirrors.ustc.edu.cn/ubuntu/ jammy main restricted universe multiverse
+deb-src https://mirrors.ustc.edu.cn/ubuntu/ jammy main restricted universe multiverse
+deb https://mirrors.ustc.edu.cn/ubuntu/ jammy-updates main restricted universe multiverse
+deb-src https://mirrors.ustc.edu.cn/ubuntu/ jammy-updates main restricted universe multiverse
+deb https://mirrors.ustc.edu.cn/ubuntu/ jammy-backports main restricted universe multiverse
+deb-src https://mirrors.ustc.edu.cn/ubuntu/ jammy-backports main restricted universe multiverse
+deb https://mirrors.ustc.edu.cn/ubuntu/ jammy-security main restricted universe multiverse
+deb-src https://mirrors.ustc.edu.cn/ubuntu/ jammy-security main restricted universe multiverse
+deb https://mirrors.ustc.edu.cn/ubuntu/ jammy-proposed main restricted universe multiverse
+deb-src https://mirrors.ustc.edu.cn/ubuntu/ jammy-proposed main restricted universe multiverse  
+EOF
+) | sudo tee /etc/apt/sources.list
+
 echo "Installing Docker..."
 sudo apt-get update
 sudo apt-get remove docker docker-engine docker.io
@@ -84,28 +101,40 @@ curl -sSL https://github.com/containernetworking/plugins/releases/download/v${BR
 sudo mkdir -p /opt/cni/bin
 sudo tar -C /opt/cni/bin -xzf bridge.tgz
 
-for bin in cfssl cfssl-certinfo cfssljson
-do
-  echo "Installing $bin..."
-  curl -sSL https://pkg.cfssl.org/R1.2/${bin}_linux-amd64 > /tmp/${bin}
-  sudo install /tmp/${bin} /usr/local/bin/${bin}
-done
 nomad -autocomplete-install
 SCRIPT
 
 Vagrant.configure("2") do |config|
-
-  config.vm.box = "hashicorp/bionic64"
+  config.vm.box = "bento/ubuntu-22.04" # 22.04 LTS, Jammy
+  config.vm.hostname = "nomad"
   config.vm.provision "shell", inline: $script, privileged: false
   
   config.vm.network "forwarded_port", guest: 4646, host: 4646, auto_correct: true, host_ip: "127.0.0.1"
   config.vm.network "forwarded_port", guest: 8500, host: 8500, auto_correct: true, host_ip: "127.0.0.1"
   config.vm.network "forwarded_port", guest: 4000, host: 4000, auto_correct: true, host_ip: "127.0.0.1"
+
+  # 设置主机与虚拟机的共享目录
+  config.vm.synced_folder ".", "/vagrant", type: "virtualbox"
   
-    ["vmware_fusion", "vmware_workstation"].each do |p|
+  # Increase memory for Libvirt
+  config.vm.provider "libvirt" do |libvirt|
+    libvirt.memory = 1024
+  end
+
+  # Increase memory for Parallels Desktop
+  config.vm.provider "parallels" do |p, o|
+    p.memory = "1024"
+  end
+
+  # Increase memory for Virtualbox
+  config.vm.provider "virtualbox" do |vb|
+        vb.memory = "1024"
+  end
+
+  # Increase memory for VMware
+  ["vmware_fusion", "vmware_workstation"].each do |p|
     config.vm.provider p do |v|
       v.vmx["memsize"] = "1024"
     end
   end
-
 end
